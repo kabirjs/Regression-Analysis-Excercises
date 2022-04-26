@@ -1,0 +1,102 @@
+---
+title: "Exercise 1"
+author: "Kabir Snell"
+date: '2022-04-20'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+library(alr4)
+```
+
+```{r}
+#2.6.1
+fcData = ftcollinstemp
+
+plot(fcData$fall, fcData$winter, ylab="Winter Average Temperatures", xlab="Fall Average Temperatures",
+     main = "Winter Average Temperature vs Fall Average Temperature (Fahrenheit)")
+
+# From the plotted data, there seems to be a slight positive correlation for winter vs fall temperature
+  # Just from observation, it would be very difficult to determine if the correlation is significant
+```
+```{r}
+#2.6.2
+
+#Creating a linear model and plotting it
+fit <- lm(winter~fall, data=fcData)
+
+plot(fcData$fall, fcData$winter, ylab="Winter Average Temperatures", xlab="Fall Average Temperatures",
+     main = "Winter Average Temperature vs Fall Average Temperature\n (Fahrenheit)")
+abline(fit, col='red')
+
+#Hypothesis Testing: NULL Hypothesis: fit slope = 0, alpha = .05 
+summary(fit)
+  # Estimate = .3123 | Std. Error = .1528
+n <- length(fcData$fall)
+t <- (.3123-0)/.1528
+p <- 2*pt(-t, n-2)
+print(p)
+  # We see that p=.0433, therefore we reject the NULL Hypothesis
+    # The slope of our regression line is not equal to 0
+```
+```{r}
+#2.6.3
+summary(fit)
+#We can see that the RSS of the data is .0371
+#This means there is a 3.71% variance in the data set that is not explained by the regression model
+#Generally a low variance means our model is a good fit, with 0% being a perfect fit
+  #In our case, we can safely say our model is a good fit
+```
+
+```{r}
+#2.6.4
+#Creating our two subsets of the data
+earlyFcData <- fcData %>%
+  filter(year >= 1900 & year <= 1989)
+
+lateFcData <- fcData %>%
+  filter(year >= 1990 & year <= 2010)
+
+#Creating simple linear regression models for both of the subsets
+fitEarly <- lm(winter ~ fall, data=earlyFcData)
+fitLate  <- lm(winter ~ fall, data=lateFcData)
+
+#Creating plots for both of the subsets
+plot(earlyFcData$fall, earlyFcData$winter,
+     ylab="Winter Average Temperatures", xlab="Fall Average Temperatures",
+     main = "Winter Average Temperature vs Fall Average Temperature (Fahrenheit) \n Years 1900-1989")
+abline(fitEarly, col='red')
+
+plot(lateFcData$fall, lateFcData$winter,
+     ylab="Winter Average Temperatures", xlab="Fall Average Temperatures",
+     main = "Winter Average Temperature vs Fall Average Temperature \n (Fahrenheit) Years 1990-2010")
+abline(fitLate, col='red')
+
+#Hypothesis testing for our subsets
+#NULL Hypothesis: fitEarly slope = 0, alpha = .05
+summary(fitEarly)
+
+  #Estimate = .1209 | Std. Error = .1681
+n <- length(earlyFcData$fall)
+t <- (.1209-0)/.1681
+p1 <- 2*pt(-t, n-2)
+
+#NULL Hypothesis: fitLate slope = 0, alpha = .05
+summary(fitLate)
+  #Estimate = .1390 | Std. Error = .3509
+n <- length(lateFcData$fall)
+t <- (.1390-0)/.3509
+p2 <- 2*pt(-t, n-2)
+
+print(p1)
+print(p2)
+
+#In both cases, we fail to reject the NULL Hypothesis, and yes the results of the two different 
+  #time periods are different from each other (differing std. error, estimate,
+  #and variability). Additionally, we can see that the later time period had a
+  #steeper slope. But, both subsets failed the hypothesis test
+```
